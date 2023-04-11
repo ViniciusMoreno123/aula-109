@@ -35,11 +35,11 @@ def countFingers(image, hand_landmarks, handNo=0):
 		fingers = []
 
 		for lm_index in tipIds:
-                # Obtenha os valores y da ponta e da parte inferior do dedo
+            # Obtenha os valores y da ponta e da parte inferior do dedo
 			finger_tip_y = landmarks[lm_index].y 
 			finger_bottom_y = landmarks[lm_index - 2].y
 
-                # Verifique se ALGUM DEDO está ABERTO ou FECHADO
+            # Verifique se ALGUM DEDO está ABERTO ou FECHADO
 			if lm_index !=4:
 				if finger_tip_y < finger_bottom_y:
 					fingers.append(1)
@@ -53,19 +53,44 @@ def countFingers(image, hand_landmarks, handNo=0):
 		# PINÇA
 
 		# Desenhe uma LINHA entre a PONTA DO DEDO e a PONTA DO POLEGAR
-		
+		finger_tip_x = int((landmarks[8].x)*width)
+		finger_tip_y = int((landmarks[8].y)*height)
+
+		thumb_tip_x = int((landmarks[4].x)*width)
+		thumb_tip_y = int((landmarks[4].y)*height)
+
+		cv2.line(image, (finger_tip_x, finger_tip_y),(thumb_tip_x, thumb_tip_y),(255,0,0),2)
 
 		# Desenhe um CÍRCULO no CENTRO da LINHA entre a PONTA DO DEDO e a PONTA DO POLEGAR
-		
+		center_x = int((finger_tip_x + thumb_tip_x )/2)
+		center_y = int((finger_tip_y + thumb_tip_y )/2)
+
+		cv2.circle(image, (center_x, center_y), 2, (0,0,255), 2)
 
 		# Calcule a DISTÂNCIA entre a PONTA DO DEDO e a PONTA DO POLEGAR
+		distance = math.sqrt(((finger_tip_x - thumb_tip_x)**2) + ((finger_tip_y - thumb_tip_y)**2))
+
+		# print("Distância: ", distance)
 		
+		print("Tamanho da Tela do Computador:",screen_width, screen_height, "Tamanho da Janela de Resultado: ", width, height)
+		print("Posição do Mouse: ", mouse.position, "Posição Central da Linha das Pontas: ", center_x, center_y)
 
 		# Defina a posição do mouse na tela em relação ao tamanho da janela de resultado	
+		relative_mouse_x = (center_x/width)*screen_width
+		relative_mouse_y = (center_y/height)*screen_height
 		
+		mouse.position = (relative_mouse_x, relative_mouse_y)
 
 		# Verifique as condições de formação da PINÇA
-		
+		if distance > 40:
+			if pinch == True:
+				pinch = False			
+				mouse.release(Button.left)
+
+		if distance <= 40 :
+			if(pinch==False):
+				pinch=True
+				mouse.press(Button.left)
 
 
 # Defina uma função para 
